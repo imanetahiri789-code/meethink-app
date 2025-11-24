@@ -8,6 +8,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSignup() {
     setMessage("");
@@ -88,13 +89,23 @@ export default function AuthPage() {
 
           <div className="space-y-2 text-sm">
             <label className="block text-slate-300">Mot de passe</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2 rounded-lg text-sm"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            <div className="relative">
+              <input
+               type={showPassword ? "text" : "password"}
+               placeholder="••••••••"
+               className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2.5 rounded-lg text-sm pr-16"
+               onChange={(e) => setPassword(e.target.value)}
+               />
+               <button
+                   type="button"
+                   onClick={() => setShowPassword((prev) => !prev)}
+                   className="absolute inset-y-0 right-2 px-2 text-xs text-slate-400 hover:text-slate-100"
+                >
+                  {showPassword ? "Masquer" : "Afficher"}
+                </button>
+              </div>
+            </div>
+
 
           {tab === "signup" ? (
             <button
