@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-// Options d'intérêts et d'objectifs
+// Options d'intérêts
 const INTEREST_OPTIONS = [
   "philosophie",
   "psychologie",
@@ -26,6 +27,7 @@ const INTEREST_OPTIONS = [
   "photographie",
 ];
 
+// Objectifs
 const GOAL_OPTIONS = [
   "amitié",
   "discussions intellectuelles",
@@ -34,6 +36,7 @@ const GOAL_OPTIONS = [
   "relation amoureuse",
 ];
 
+// Style de conversation
 const CONVERSATION_STYLE_OPTIONS = [
   "calme",
   "réfléchi",
@@ -44,6 +47,8 @@ const CONVERSATION_STYLE_OPTIONS = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [pseudo, setPseudo] = useState("");
   const [description, setDescription] = useState("");
@@ -123,11 +128,16 @@ export default function ProfilePage() {
 
     if (error) {
       console.error(error);
-      setMessage(error.message);
+      setMessage("Erreur lors de l’enregistrement du profil.");
     } else {
-      setMessage("Profil enregistré");
-    }
+      setMessage("Profil enregistré ✅");
 
+      // Redirection vers /explore après un court délai
+      setTimeout(() => {
+        router.push("/explore");
+      }, 800);
+    }
+  }
 
   function toggleInterest(value: string) {
     setInterests((prev) =>
