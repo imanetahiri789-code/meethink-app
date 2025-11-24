@@ -23,7 +23,6 @@ export default function AuthPage() {
     if (error) {
       setMessage(error.message);
     } else {
-      // En dev on n'oblige pas la vérif d'email, donc l'user peut se connecter direct
       setMessage("Inscription réussie ! Tu peux maintenant te connecter ✨");
       setTab("login");
     }
@@ -39,7 +38,6 @@ export default function AuthPage() {
     if (error) {
       setMessage(error.message);
     } else {
-      // Connexion OK → on envoie l'utilisateur sur sa page profil
       router.push("/profile");
     }
   }
@@ -48,7 +46,6 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-50 px-4">
       {/* LOGO + NOM APPLI */}
       <div className="mb-8 flex items-center gap-3">
-        {/* Logo simple rond avec M */}
         <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-sky-400 flex items-center justify-center shadow-lg">
           <span className="text-xl font-bold">M</span>
         </div>
@@ -131,6 +128,17 @@ export default function AuthPage() {
               </button>
             </div>
           </div>
+
+          {/* Lien "Mot de passe oublié ?" */}
+          {tab === "login" && (
+            <button
+              type="button"
+              onClick={() => router.push("/forgot-password")}
+              className="text-xs text-slate-400 hover:text-slate-100 underline underline-offset-2"
+            >
+              Mot de passe oublié ?
+            </button>
+          )}
 
           {/* Bouton principal */}
           {tab === "signup" ? (
