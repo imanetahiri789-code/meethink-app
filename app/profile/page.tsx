@@ -125,7 +125,7 @@ export default function ProfilePage() {
       console.error(error);
       setMessage(error.message);
     } else {
-      setMessage("Profil enregistré ✅");
+      setMessage("Profil enregistré");
     }
 
 
