@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthPage() {
+  const router = useRouter();
+
   const [tab, setTab] = useState<"login" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
 
   async function handleSignup() {
     setMessage("");
@@ -16,8 +19,14 @@ export default function AuthPage() {
       email,
       password,
     });
-    if (error) setMessage(error.message);
-    else setMessage("Inscription réussie ! Vérifie ton email ✨");
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      // En dev on n'oblige pas la vérif d'email, donc l'user peut se connecter direct
+      setMessage("Inscription réussie ! Tu peux maintenant te connecter ✨");
+      setTab("login");
+    }
   }
 
   async function handleLogin() {
@@ -26,23 +35,28 @@ export default function AuthPage() {
       email,
       password,
     });
-    if (error) setMessage(error.message);
-    else setMessage("Connexion réussie !");
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      // Connexion OK → on envoie l'utilisateur sur sa page profil
+      router.push("/profile");
+    }
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-50 px-4">
       {/* LOGO + NOM APPLI */}
       <div className="mb-8 flex items-center gap-3">
-        {/* Logo simple ronde avec M */}
+        {/* Logo simple rond avec M */}
         <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-sky-400 flex items-center justify-center shadow-lg">
-          <span className="text-xl font-bold">MT</span>
+          <span className="text-xl font-bold">M</span>
         </div>
         <div className="text-left">
           <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
             Application audio
           </p>
-          <h1 className="text-2xl font-semibold">MeeThink</h1>
+          <h1 className="text-2xl font-semibold">MeetThink</h1>
           <p className="text-sm text-slate-400">
             Des conversations profondes avec les bonnes personnes.
           </p>
@@ -54,7 +68,11 @@ export default function AuthPage() {
         {/* Onglets */}
         <div className="flex bg-slate-800 rounded-xl p-1">
           <button
-            onClick={() => setTab("signup")}
+            type="button"
+            onClick={() => {
+              setTab("signup");
+              setMessage("");
+            }}
             className={`w-1/2 px-4 py-2 text-sm rounded-lg transition ${
               tab === "signup"
                 ? "bg-slate-50 text-slate-900 font-semibold"
@@ -64,7 +82,11 @@ export default function AuthPage() {
             Inscription
           </button>
           <button
-            onClick={() => setTab("login")}
+            type="button"
+            onClick={() => {
+              setTab("login");
+              setMessage("");
+            }}
             className={`w-1/2 px-4 py-2 text-sm rounded-lg transition ${
               tab === "login"
                 ? "bg-slate-50 text-slate-900 font-semibold"
@@ -77,38 +99,43 @@ export default function AuthPage() {
 
         {/* Formulaire */}
         <div className="space-y-4">
+          {/* Email */}
           <div className="space-y-2 text-sm">
             <label className="block text-slate-300">Email</label>
             <input
               type="email"
               placeholder="ton.email@example.com"
-              className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2 rounded-lg text-sm"
+              className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2.5 rounded-lg text-sm"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
+          {/* Mot de passe + Afficher/Masquer */}
           <div className="space-y-2 text-sm">
             <label className="block text-slate-300">Mot de passe</label>
             <div className="relative">
               <input
-               type={showPassword ? "text" : "password"}
-               placeholder="••••••••"
-               className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2.5 rounded-lg text-sm pr-16"
-               onChange={(e) => setPassword(e.target.value)}
-               />
-               <button
-                   type="button"
-                   onClick={() => setShowPassword((prev) => !prev)}
-                   className="absolute inset-y-0 right-2 px-2 text-xs text-slate-400 hover:text-slate-100"
-                >
-                  {showPassword ? "Masquer" : "Afficher"}
-                </button>
-              </div>
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none p-2.5 rounded-lg text-sm pr-16"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-2 px-2 text-xs text-slate-400 hover:text-slate-100"
+              >
+                {showPassword ? "Masquer" : "Afficher"}
+              </button>
             </div>
+          </div>
 
-
+          {/* Bouton principal */}
           {tab === "signup" ? (
             <button
+              type="button"
               onClick={handleSignup}
               className="w-full bg-gradient-to-tr from-indigo-500 to-sky-400 text-slate-950 py-2 rounded-lg text-sm font-semibold shadow-md hover:brightness-110 transition"
             >
@@ -116,6 +143,7 @@ export default function AuthPage() {
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleLogin}
               className="w-full bg-gradient-to-tr from-indigo-500 to-sky-400 text-slate-950 py-2 rounded-lg text-sm font-semibold shadow-md hover:brightness-110 transition"
             >
@@ -123,6 +151,7 @@ export default function AuthPage() {
             </button>
           )}
 
+          {/* Message d'erreur / succès */}
           {message && (
             <p className="text-center text-xs text-rose-400 mt-2">{message}</p>
           )}
