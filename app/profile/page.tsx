@@ -121,13 +121,13 @@ export default function ProfilePage() {
       conversation_style: conversationStyle,
     });
 
-    if (error) {
-      console.error(error);
-      setMessage("Erreur lors de l’enregistrement du profil.");
-    } else {
-      setMessage("Profil enregistré ✅");
-    }
-  }
+if (error) {
+  console.error(error);
+  setMessage(error.message);
+} else {
+  setMessage("Profil enregistré ✅");
+}
+
 
   function toggleInterest(value: string) {
     setInterests((prev) =>
