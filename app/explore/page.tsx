@@ -10,6 +10,7 @@ type Profile = {
   interests: string[] | null;
   goals: string[] | null;
   conversation_style: string | null;
+  last_seen: string | null;
 };
 
 export default function ExplorePage() {
@@ -25,7 +26,7 @@ export default function ExplorePage() {
     setLoading(true);
     setMessage("");
 
-    // Récupérer l'utilisateur connecté
+    // 1) Récupérer l'utilisateur connecté
     const {
       data: { user },
       error: authError,
@@ -37,23 +38,32 @@ export default function ExplorePage() {
       return;
     }
 
-    // Récupérer tous les profils sauf le sien
+    // 2) Calculer le seuil "en ligne récemment" (ex : dernière 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    // 3) Récupérer les profils "en ligne" sauf moi
     const { data, error } = await supabase
       .from("profiles")
       .select(
-        "user_id, pseudo, description, interests, goals, conversation_style"
+        "user_id, pseudo, description, interests, goals, conversation_style, last_seen"
       )
-      .neq("user_id", user.id);
+      .neq("user_id", user.id)
+      .gte("last_seen", fiveMinutesAgo);
 
     if (error) {
       console.error(error);
       setMessage("Erreur en chargeant les profils.");
-    } else if (!data || data.length === 0) {
-      setMessage("Il n’y a pas encore d’autres profils à afficher.");
-    } else {
-      setProfiles(data as Profile[]);
+      setLoading(false);
+      return;
     }
 
+    if (!data || data.length === 0) {
+      setMessage("Personne n’est en ligne pour le moment.");
+      setLoading(false);
+      return;
+    }
+
+    setProfiles(data as Profile[]);
     setLoading(false);
   }
 
@@ -69,9 +79,9 @@ export default function ExplorePage() {
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
               Explorer
             </p>
-            <h1 className="text-2xl font-semibold">Profils disponibles</h1>
+            <h1 className="text-2xl font-semibold">Personnes en ligne</h1>
             <p className="text-sm text-slate-400">
-              Découvre des personnes qui aiment réfléchir comme toi.
+              Tu vois uniquement les utilisateurs actifs récemment.
             </p>
           </div>
         </div>
@@ -107,6 +117,9 @@ export default function ExplorePage() {
                       </p>
                     )}
                   </div>
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/60 text-emerald-200">
+                    En ligne
+                  </span>
                 </div>
 
                 {p.description && (
@@ -150,6 +163,8 @@ export default function ExplorePage() {
                     </div>
                   </div>
                 )}
+
+                {/* On mettra ici le bouton d'appel audio */}
               </div>
             ))}
           </div>
