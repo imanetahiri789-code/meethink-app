@@ -50,6 +50,8 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+
   const [pseudo, setPseudo] = useState("");
   const [description, setDescription] = useState("");
 
@@ -90,15 +92,46 @@ export default function ProfilePage() {
     }
 
     if (profile) {
+      setHasProfile(true);
       setPseudo(profile.pseudo || "");
       setDescription(profile.description || "");
       setInterests(profile.interests || []);
       setGoals(profile.goals || []);
       setConversationStyle(profile.conversation_style || "");
+    } else {
+      setHasProfile(false);
     }
 
     setLoading(false);
   }
+
+  // Met à jour last_seen régulièrement (pour plus tard : "en ligne")
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    async function pingLastSeen() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      await supabase
+        .from("profiles")
+        .update({ last_seen: new Date().toISOString() })
+        .eq("user_id", user.id);
+    }
+
+    // premier ping
+    pingLastSeen();
+
+    // puis toutes les 60 secondes
+    interval = setInterval(pingLastSeen, 60_000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   async function saveProfile() {
     setMessage("");
@@ -130,6 +163,7 @@ export default function ProfilePage() {
       console.error(error);
       setMessage("Erreur lors de l’enregistrement du profil.");
     } else {
+      setHasProfile(true);
       setMessage("Profil enregistré ✅");
 
       // Redirection vers /explore après un court délai
@@ -171,9 +205,13 @@ export default function ProfilePage() {
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
               Profil MeetThink
             </p>
-            <h1 className="text-2xl font-semibold">Mon profil</h1>
+            <h1 className="text-2xl font-semibold">
+              {hasProfile ? "Modifier mon profil" : "Créer mon profil"}
+            </h1>
             <p className="text-sm text-slate-400">
-              Aide l’app à te présenter aux bonnes personnes.
+              {hasProfile
+                ? "Tu peux mettre à jour ces informations quand tu veux."
+                : "Complète ton profil pour être matché avec les bonnes personnes."}
             </p>
           </div>
         </div>
@@ -301,7 +339,7 @@ export default function ProfilePage() {
             onClick={saveProfile}
             className="w-full bg-gradient-to-tr from-indigo-500 to-sky-400 text-slate-950 py-2.5 rounded-lg text-sm font-semibold shadow-md hover:brightness-110 transition"
           >
-            Enregistrer mon profil
+            {hasProfile ? "Mettre à jour mon profil" : "Enregistrer mon profil"}
           </button>
         </div>
       </div>
