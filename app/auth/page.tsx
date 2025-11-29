@@ -38,7 +38,7 @@ export default function AuthPage() {
     if (error) {
       setMessage(error.message);
     } else {
-      router.push("/profile");
+      router.push("/"); // on envoie vers la page d'accueil
     }
   }
 
