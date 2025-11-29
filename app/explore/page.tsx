@@ -38,7 +38,7 @@ export default function ExplorePage() {
       return;
     }
 
-    // 2) Calculer le seuil "en ligne récemment" (ex : dernière 5 minutes)
+    // 2) Calculer le seuil "en ligne récemment" (ex : dernières 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     // 3) Récupérer les profils "en ligne" sauf moi
@@ -67,6 +67,37 @@ export default function ExplorePage() {
     setLoading(false);
   }
 
+  // 👉 Création d'un appel vers un autre utilisateur
+  async function handleCall(receiverId: string) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Tu dois être connecté·e pour appeler.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("calls")
+      .insert({
+        caller_id: user.id,
+        receiver_id: receiverId,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      alert("Erreur lors de la création de l'appel.");
+    } else {
+      // Plus tard : on redirigera vers une vraie page d'appel audio
+      // ex : router.push(`/call/${data.id}`)
+      alert("Appel envoyé 🔔");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 px-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -86,7 +117,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Etat de chargement / message */}
+        {/* État de chargement / message */}
         {loading && (
           <p className="text-sm text-slate-400">Chargement des profils…</p>
         )}
@@ -164,7 +195,13 @@ export default function ExplorePage() {
                   </div>
                 )}
 
-                {/* On mettra ici le bouton d'appel audio */}
+                {/* 👉 Bouton d'appel */}
+                <button
+                  onClick={() => handleCall(p.user_id)}
+                  className="mt-4 px-4 py-2 bg-gradient-to-tr from-indigo-500 to-sky-400 text-slate-950 rounded-lg text-sm font-semibold hover:brightness-110 transition"
+                >
+                  Appeler
+                </button>
               </div>
             ))}
           </div>
