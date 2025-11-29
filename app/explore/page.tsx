@@ -23,6 +23,22 @@ export default function ExplorePage() {
   useEffect(() => {
     loadProfiles();
   }, []);
+  useEffect(() => {
+    async function pingLastSeen() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      await supabase
+        .from("profiles")
+        .update({ last_seen: new Date().toISOString() })
+        .eq("user_id", user.id);
+    }
+
+    pingLastSeen();
+  }, []);
 
   async function loadProfiles() {
     setLoading(true);

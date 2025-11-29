@@ -9,19 +9,25 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [pseudo, setPseudo] = useState<string | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     async function loadUser() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
-        // pas connecté → on renvoie vers /auth
+        // pas connecté → retour à /auth
         router.push("/auth");
         return;
       }
 
-      // on récupère le pseudo pour l'afficher
+      // 🔹 ICI : on met à jour last_seen pour dire "je suis en ligne"
+      await supabase
+        .from("profiles")
+        .update({ last_seen: new Date().toISOString() })
+        .eq("user_id", user.id);
+
+      // 🔹 Puis on récupère le pseudo
       const { data: profile } = await supabase
         .from("profiles")
         .select("pseudo")
