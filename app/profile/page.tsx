@@ -150,14 +150,20 @@ export default function ProfilePage() {
       return;
     }
 
-    const { error } = await supabase.from("profiles").upsert({
+  const { error } = await supabase
+  .from("profiles")
+  .upsert(
+    {
       user_id: user.id,
       pseudo,
       description,
       interests,
       goals,
       conversation_style: conversationStyle,
-    });
+    },
+    { onConflict: "user_id" } // ⬅ important
+  );
+
 
     if (error) {
       console.error(error);
