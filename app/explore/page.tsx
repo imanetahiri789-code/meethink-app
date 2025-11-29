@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";  // 
 
 type Profile = {
   user_id: string;
@@ -14,6 +15,7 @@ type Profile = {
 };
 
 export default function ExplorePage() {
+  const router = useRouter(); //
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -68,35 +70,35 @@ export default function ExplorePage() {
   }
 
   // 👉 Création d'un appel vers un autre utilisateur
-  async function handleCall(receiverId: string) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+ async function handleCall(receiverId: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      alert("Tu dois être connecté·e pour appeler.");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("calls")
-      .insert({
-        caller_id: user.id,
-        receiver_id: receiverId,
-        status: "pending",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error(error);
-      alert("Erreur lors de la création de l'appel.");
-    } else {
-      // Plus tard : on redirigera vers une vraie page d'appel audio
-      // ex : router.push(`/call/${data.id}`)
-      alert("Appel envoyé 🔔");
-    }
+  if (!user) {
+    alert("Tu dois être connecté·e pour appeler.");
+    return;
   }
+
+  const { data, error } = await supabase
+    .from("calls")
+    .insert({
+      caller_id: user.id,
+      receiver_id: receiverId,
+      status: "pending",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    alert("Erreur lors de la création de l'appel.");
+  } else {
+    // on redirige vers la page d'appel avec l'id de l'appel
+    router.push(`/call/${data.id}`);
+  }
+}
+
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 px-4 py-8">
